@@ -4,13 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>La Crew de Hipobuy · Catálogo</title>
-  <!-- Google Fonts para un estilo urbano -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
-  <!-- Font Awesome para iconos -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <style>
+    /* ---- RESET & BASE ---- */
     * {
       margin: 0;
       padding: 0;
@@ -21,20 +20,129 @@
       font-family: 'Inter', sans-serif;
       background: #0d0d0d;
       color: #f0f0f0;
-      padding: 0 20px 40px;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
+      overflow-x: hidden;
     }
 
-    /* Contenedor principal */
-    .app {
-      max-width: 1440px;
+    /* ---- SPLASH SCREEN ---- */
+    #splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #0b0b0b;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #splash.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    #splash-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
+      height: 100%;
+      z-index: 0;
     }
 
-    /* Header */
+    .splash-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .splash-logo {
+      font-size: 4.5rem;
+      color: #facc15;
+      background: rgba(26, 26, 26, 0.8);
+      backdrop-filter: blur(8px);
+      padding: 20px 30px;
+      border-radius: 30px;
+      display: inline-block;
+      margin-bottom: 20px;
+      box-shadow: 0 0 60px rgba(250, 204, 21, 0.2);
+      animation: glowPulse 2s infinite alternate;
+    }
+
+    @keyframes glowPulse {
+      0% { box-shadow: 0 0 30px rgba(250, 204, 21, 0.1); }
+      100% { box-shadow: 0 0 80px rgba(250, 204, 21, 0.4); }
+    }
+
+    .splash-title {
+      font-size: 2.8rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #facc15, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -1px;
+    }
+
+    .splash-sub {
+      color: #888;
+      font-size: 1.1rem;
+      margin-top: 8px;
+      letter-spacing: 2px;
+    }
+
+    .splash-bar {
+      width: 280px;
+      max-width: 80%;
+      height: 4px;
+      background: #1f1f1f;
+      border-radius: 4px;
+      margin: 30px auto 0;
+      overflow: hidden;
+    }
+
+    .splash-bar-inner {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #facc15, #f59e0b);
+      border-radius: 4px;
+      transition: width 0.15s linear;
+    }
+
+    .splash-text {
+      color: #555;
+      font-size: 0.8rem;
+      margin-top: 12px;
+      letter-spacing: 1px;
+    }
+
+    /* ---- CONTENIDO PRINCIPAL (oculto inicialmente) ---- */
+    #main-content {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.9s ease, transform 0.9s ease;
+      width: 100%;
+      max-width: 1440px;
+      padding: 0 20px 40px;
+    }
+
+    #main-content.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ---- HEADER ---- */
     .header {
       display: flex;
       justify-content: space-between;
@@ -43,6 +151,12 @@
       padding: 30px 0 20px;
       border-bottom: 1px solid #2a2a2a;
       margin-bottom: 30px;
+      position: sticky;
+      top: 0;
+      background: rgba(13, 13, 13, 0.8);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+      transition: background 0.3s;
     }
 
     .logo {
@@ -94,7 +208,7 @@
       margin-right: 8px;
     }
 
-    /* Barra de búsqueda */
+    /* ---- BÚSQUEDA Y FILTROS ---- */
     .search-section {
       display: flex;
       flex-wrap: wrap;
@@ -190,7 +304,7 @@
       color: #eee;
     }
 
-    /* Grid de productos */
+    /* ---- GRID DE PRODUCTOS ---- */
     .product-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -203,15 +317,46 @@
       border-radius: 20px;
       border: 1px solid #252525;
       overflow: hidden;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
       display: flex;
       flex-direction: column;
+      opacity: 0;
+      transform: translateY(40px);
+      animation: cardAppear 0.5s forwards;
+    }
+
+    .product-card:nth-child(1)  { animation-delay: 0.05s; }
+    .product-card:nth-child(2)  { animation-delay: 0.10s; }
+    .product-card:nth-child(3)  { animation-delay: 0.15s; }
+    .product-card:nth-child(4)  { animation-delay: 0.20s; }
+    .product-card:nth-child(5)  { animation-delay: 0.25s; }
+    .product-card:nth-child(6)  { animation-delay: 0.30s; }
+    .product-card:nth-child(7)  { animation-delay: 0.35s; }
+    .product-card:nth-child(8)  { animation-delay: 0.40s; }
+    .product-card:nth-child(9)  { animation-delay: 0.45s; }
+    .product-card:nth-child(10) { animation-delay: 0.50s; }
+    .product-card:nth-child(11) { animation-delay: 0.55s; }
+    .product-card:nth-child(12) { animation-delay: 0.60s; }
+    .product-card:nth-child(13) { animation-delay: 0.65s; }
+    .product-card:nth-child(14) { animation-delay: 0.70s; }
+    .product-card:nth-child(15) { animation-delay: 0.75s; }
+    .product-card:nth-child(16) { animation-delay: 0.80s; }
+    .product-card:nth-child(17) { animation-delay: 0.85s; }
+    .product-card:nth-child(18) { animation-delay: 0.90s; }
+    .product-card:nth-child(19) { animation-delay: 0.95s; }
+    .product-card:nth-child(20) { animation-delay: 1.00s; }
+
+    @keyframes cardAppear {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .product-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-      border-color: #3a3a3a;
+      transform: translateY(-8px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+      border-color: #facc15;
     }
 
     .product-image {
@@ -224,6 +369,11 @@
       color: #444;
       border-bottom: 1px solid #222;
       position: relative;
+      transition: background 0.3s;
+    }
+
+    .product-card:hover .product-image {
+      background: #222;
     }
 
     .product-image .brand-tag {
@@ -332,7 +482,7 @@
       color: #333;
     }
 
-    /* Footer */
+    /* ---- FOOTER ---- */
     .footer {
       margin-top: 50px;
       padding: 30px 0 10px;
@@ -347,102 +497,180 @@
       color: #facc15;
     }
 
-    /* Scroll personalizado */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #0d0d0d;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #2a2a2a;
-      border-radius: 10px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #3a3a3a;
-    }
+    /* ---- SCROLLBAR ---- */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0d0d0d; }
+    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
 
-    /* Responsive */
+    /* ---- RESPONSIVE ---- */
     @media (max-width: 640px) {
-      .header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
-      .logo h1 {
-        font-size: 1.4rem;
-      }
-      .search-section {
-        padding: 16px;
-      }
-      .product-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-      }
+      .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .logo h1 { font-size: 1.4rem; }
+      .search-section { padding: 16px; }
+      .product-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+      .splash-title { font-size: 2rem; }
     }
-
     @media (max-width: 420px) {
-      .product-grid {
-        grid-template-columns: 1fr;
-      }
+      .product-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <!-- Header -->
-    <header class="header">
-      <div class="logo">
-        <div class="logo-icon"><i class="fas fa-crown"></i></div>
-        <div>
-          <h1>La Crew de Hipobuy</h1>
-          <span>Catálogo premium · 300+ productos reales</span>
-        </div>
-      </div>
-      <div class="stats" id="stats">
-        <i class="fas fa-box"></i> <span id="productCount">0</span> productos
-      </div>
-    </header>
-
-    <!-- Búsqueda y filtros -->
-    <section class="search-section">
-      <div class="search-box">
-        <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="Buscar por marca, categoría o modelo..." />
-      </div>
-      <div class="filters">
-        <button class="filter-btn active" data-filter="all">Todos</button>
-        <button class="filter-btn" data-filter="BALENCIAGA">Balenciaga</button>
-        <button class="filter-btn" data-filter="CORTEIZ">Corteiz</button>
-        <button class="filter-btn" data-filter="ESSENTIALS">Essentials</button>
-        <button class="filter-btn" data-filter="JORDAN">Jordan</button>
-        <button class="filter-btn" data-filter="LOUIS VUITTON">LV</button>
-        <button class="filter-btn" data-filter="NIKE">Nike</button>
-        <button class="filter-btn" data-filter="ROLEX">Rolex</button>
-        <button class="filter-btn" data-filter="STUSSY">Stussy</button>
-        <button class="clear-btn" id="clearFilters"><i class="fas fa-times"></i> Limpiar</button>
-      </div>
-    </section>
-
-    <!-- Grid de productos -->
-    <div class="product-grid" id="productGrid">
-      <!-- Los productos se inyectan con JS -->
+  <!-- SPLASH SCREEN -->
+  <div id="splash">
+    <canvas id="splash-canvas"></canvas>
+    <div class="splash-content">
+      <div class="splash-logo"><i class="fas fa-crown"></i></div>
+      <div class="splash-title">La Crew de Hipobuy</div>
+      <div class="splash-sub">Streetwear Vault</div>
+      <div class="splash-bar"><div class="splash-bar-inner" id="progressBar"></div></div>
+      <div class="splash-text" id="splashText">Cargando catálogo...</div>
     </div>
+  </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-      <i class="fas fa-crown"></i> La Crew de Hipobuy · Todos los enlaces son de referencia · 2026
-    </footer>
+  <!-- CONTENIDO PRINCIPAL -->
+  <div id="main-content">
+    <div class="app" style="max-width:1440px; width:100%; margin:0 auto;">
+      <!-- Header -->
+      <header class="header">
+        <div class="logo">
+          <div class="logo-icon"><i class="fas fa-crown"></i></div>
+          <div>
+            <h1>La Crew de Hipobuy</h1>
+            <span>Catálogo premium · 300+ productos reales</span>
+          </div>
+        </div>
+        <div class="stats" id="stats">
+          <i class="fas fa-box"></i> <span id="productCount">0</span> productos
+        </div>
+      </header>
+
+      <!-- Búsqueda y filtros -->
+      <section class="search-section">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="Buscar por marca, categoría o modelo..." />
+        </div>
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all">Todos</button>
+          <button class="filter-btn" data-filter="BALENCIAGA">Balenciaga</button>
+          <button class="filter-btn" data-filter="CORTEIZ">Corteiz</button>
+          <button class="filter-btn" data-filter="ESSENTIALS">Essentials</button>
+          <button class="filter-btn" data-filter="JORDAN">Jordan</button>
+          <button class="filter-btn" data-filter="LOUIS VUITTON">LV</button>
+          <button class="filter-btn" data-filter="NIKE">Nike</button>
+          <button class="filter-btn" data-filter="ROLEX">Rolex</button>
+          <button class="filter-btn" data-filter="STUSSY">Stussy</button>
+          <button class="clear-btn" id="clearFilters"><i class="fas fa-times"></i> Limpiar</button>
+        </div>
+      </section>
+
+      <!-- Grid de productos -->
+      <div class="product-grid" id="productGrid"></div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <i class="fas fa-crown"></i> La Crew de Hipobuy · Todos los enlaces son de referencia · 2026
+      </footer>
+    </div>
   </div>
 
   <script>
     // --------------------------------------------------------------
-    // 1. GENERACIÓN DE PRODUCTOS (basados en el archivo + expansión)
+    // 0. SPLASH SCREEN - PARTÍCULAS Y PROGRESO
+    // --------------------------------------------------------------
+    (function splash() {
+      const canvas = document.getElementById('splash-canvas');
+      const ctx = canvas.getContext('2d');
+      let width, height, particles = [];
+      const NUM_PARTICLES = 120;
+
+      function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      class Particle {
+        constructor() {
+          this.reset();
+        }
+        reset() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.size = Math.random() * 2.5 + 0.5;
+          this.speedX = (Math.random() - 0.5) * 0.8;
+          this.speedY = (Math.random() - 0.5) * 0.8;
+          this.opacity = Math.random() * 0.6 + 0.2;
+        }
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+          if (this.x < 0 || this.x > width) this.speedX *= -1;
+          if (this.y < 0 || this.y > height) this.speedY *= -1;
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(250, 204, 21, ${this.opacity})`;
+          ctx.fill();
+        }
+      }
+
+      for (let i = 0; i < NUM_PARTICLES; i++) particles.push(new Particle());
+
+      function animateParticles() {
+        ctx.clearRect(0, 0, width, height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        // Dibujar conexiones (opcional)
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(250, 204, 21, ${0.08 * (1 - dist/120)})`;
+              ctx.lineWidth = 0.6;
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(animateParticles);
+      }
+      animateParticles();
+
+      // Barra de progreso
+      const progressBar = document.getElementById('progressBar');
+      const splashText = document.getElementById('splashText');
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.random() * 4 + 2;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+          splashText.textContent = '¡Listo!';
+          setTimeout(() => {
+            document.getElementById('splash').classList.add('hidden');
+            document.getElementById('main-content').classList.add('visible');
+          }, 400);
+        }
+        progressBar.style.width = progress + '%';
+        if (progress < 30) splashText.textContent = 'Preparando el catálogo...';
+        else if (progress < 70) splashText.textContent = 'Cargando productos...';
+        else if (progress < 95) splashText.textContent = 'Casi listo...';
+      }, 80);
+    })();
+
+    // --------------------------------------------------------------
+    // 1. GENERACIÓN DE PRODUCTOS (igual que antes, pero con más reales)
     // --------------------------------------------------------------
     function generateProducts() {
       const baseProducts = [];
-
-      // Vendedores por marca (rotaremos)
       const sellers = {
         BALENCIAGA: ['GOOD Batch', 'Bean Studio', 'Rick Studio', 'Lucky8 Vintage', 'Cloyad'],
         CORTEIZ: ['Angelseller', 'BudgetShoes', 'GOAT Official'],
@@ -454,56 +682,36 @@
         STUSSY: ['Subway Hooligan', 'Wave', 'Budget Master']
       };
 
-      // Categorías y prefijos de modelo
-      const categories = ['Camisetas', 'Pantalones', 'Zapatos/Zapatillas', 'Accesorios/Hoodies', 'Relojes'];
-
-      // Para cada marca, generar productos
-      const brands = Object.keys(sellers);
-
-      // Primero, los productos reales del archivo (muestra representativa)
-      // Los añadiremos manualmente con nombres específicos
       const realProducts = [
-        // BALENCIAGA
         { marca: 'BALENCIAGA', categoria: 'Camisetas', modelo: 'BALENCIAGA Vintage Oversized Summer Cotton Tee Fit-#3001', batch: 'GOOD Batch', enlace: 'https://item.taobao.com/item.htm?id=67100001' },
         { marca: 'BALENCIAGA', categoria: 'Camisetas', modelo: 'BALENCIAGA Vintage Oversized Summer Cotton Tee Fit-#3002', batch: 'Bean Studio', enlace: 'https://item.taobao.com/item.htm?id=67100002' },
         { marca: 'BALENCIAGA', categoria: 'Camisetas', modelo: 'BALENCIAGA Vintage Oversized Summer Cotton Tee Fit-#3003', batch: 'Rick Studio', enlace: 'https://item.taobao.com/item.htm?id=67100003' },
         { marca: 'BALENCIAGA', categoria: 'Pantalones', modelo: 'BALENCIAGA Streetwear Baggy Cargo Denim Pants Style-#4063', batch: 'GOOD Batch', enlace: 'https://item.taobao.com/item.htm?id=67100063' },
         { marca: 'BALENCIAGA', categoria: 'Zapatos/Zapatillas', modelo: 'BALENCIAGA Sneaker Premium Luxury Vault Line Ref-#1125', batch: 'GOOD Batch', enlace: 'https://item.taobao.com/item.htm?id=67100125' },
         { marca: 'BALENCIAGA', categoria: 'Accesorios/Hoodies', modelo: 'BALENCIAGA Heavyweight Fleece Garment Essentials Ref-#5187', batch: 'GOOD Batch', enlace: 'https://item.taobao.com/item.htm?id=67100187' },
-        // CORTEIZ
         { marca: 'CORTEIZ', categoria: 'Camisetas', modelo: 'CORTEIZ Vintage Oversized Summer Cotton Tee Fit-#3249', batch: 'Angelseller', enlace: 'https://weidian.com/item.html?itemID=61500249' },
         { marca: 'CORTEIZ', categoria: 'Pantalones', modelo: 'CORTEIZ Streetwear Baggy Cargo Denim Pants Style-#4311', batch: 'Angelseller', enlace: 'https://weidian.com/item.html?itemID=61500311' },
         { marca: 'CORTEIZ', categoria: 'Zapatos/Zapatillas', modelo: 'CORTEIZ Sneaker Premium Luxury Vault Line Ref-#1373', batch: 'Angelseller', enlace: 'https://weidian.com/item.html?itemID=61500373' },
         { marca: 'CORTEIZ', categoria: 'Accesorios/Hoodies', modelo: 'CORTEIZ Heavyweight Fleece Garment Essentials Ref-#5435', batch: 'Angelseller', enlace: 'https://weidian.com/item.html?itemID=61500435' },
-        // ESSENTIALS
         { marca: 'ESSENTIALS', categoria: 'Camisetas', modelo: 'ESSENTIALS Vintage Oversized Summer Cotton Tee Fit-#3497', batch: 'GMAN Factory', enlace: 'https://item.taobao.com/item.htm?id=67900497' },
         { marca: 'ESSENTIALS', categoria: 'Pantalones', modelo: 'ESSENTIALS Streetwear Baggy Cargo Denim Pants Style-#4580', batch: 'GMAN Factory', enlace: 'https://item.taobao.com/item.htm?id=67900580' },
         { marca: 'ESSENTIALS', categoria: 'Accesorios/Hoodies', modelo: 'ESSENTIALS Heavyweight Fleece Garment Essentials Ref-#5663', batch: 'GMAN Factory', enlace: 'https://item.taobao.com/item.htm?id=67900663' },
-        // JORDAN
         { marca: 'JORDAN', categoria: 'Zapatos/Zapatillas', modelo: 'JORDAN Sneaker Premium Luxury Vault Line Ref-#1746', batch: 'GX Batch', enlace: 'https://weidian.com/item.html?itemID=54100746' },
         { marca: 'JORDAN', categoria: 'Zapatos/Zapatillas', modelo: 'JORDAN Sneaker Premium Luxury Vault Line Ref-#1747', batch: 'LJR Batch', enlace: 'https://weidian.com/item.html?itemID=54100747' },
-        // LOUIS VUITTON
         { marca: 'LOUIS VUITTON', categoria: 'Camisetas', modelo: 'LOUIS VUITTON Vintage Oversized Summer Cotton Tee Fit-#3996', batch: 'Jelly Studio', enlace: 'https://weidian.com/item.html?itemID=44200996' },
         { marca: 'LOUIS VUITTON', categoria: 'Pantalones', modelo: 'LOUIS VUITTON Streetwear Baggy Cargo Denim Pants Style-#5058', batch: 'Jelly Studio', enlace: 'https://weidian.com/item.html?itemID=44201058' },
         { marca: 'LOUIS VUITTON', categoria: 'Zapatos/Zapatillas', modelo: 'LOUIS VUITTON Sneaker Premium Luxury Vault Line Ref-#2120', batch: 'Jelly Studio', enlace: 'https://weidian.com/item.html?itemID=44201120' },
         { marca: 'LOUIS VUITTON', categoria: 'Accesorios/Hoodies', modelo: 'LOUIS VUITTON Heavyweight Fleece Garment Essentials Ref-#6182', batch: 'Jelly Studio', enlace: 'https://weidian.com/item.html?itemID=44201182' },
-        // NIKE
         { marca: 'NIKE', categoria: 'Zapatos/Zapatillas', modelo: 'NIKE Sneaker Premium Luxury Vault Line Ref-#2244', batch: 'VT Batch', enlace: 'https://weidian.com/item.html?itemID=49601244' },
         { marca: 'NIKE', categoria: 'Accesorios/Hoodies', modelo: 'NIKE Heavyweight Fleece Garment Essentials Ref-#6369', batch: 'VT Batch', enlace: 'https://weidian.com/item.html?itemID=49601369' },
-        // ROLEX
         { marca: 'ROLEX', categoria: 'Relojes', modelo: 'ROLEX SuperClon 41mm Masterpiece Craft Ref-#3494', batch: 'VSF Factory', enlace: 'https://weidian.com/item.html?itemID=43101494' },
-        // STUSSY
         { marca: 'STUSSY', categoria: 'Camisetas', modelo: 'STUSSY Vintage Oversized Summer Cotton Tee Fit-#4744', batch: 'Subway Hooligan', enlace: 'https://item.taobao.com/item.htm?id=65101744' },
         { marca: 'STUSSY', categoria: 'Pantalones', modelo: 'STUSSY Streetwear Baggy Cargo Denim Pants Style-#5827', batch: 'Subway Hooligan', enlace: 'https://item.taobao.com/item.htm?id=65101827' },
         { marca: 'STUSSY', categoria: 'Accesorios/Hoodies', modelo: 'STUSSY Heavyweight Fleece Garment Essentials Ref-#6910', batch: 'Subway Hooligan', enlace: 'https://item.taobao.com/item.htm?id=65101910' },
         { marca: 'STUSSY', categoria: 'Accesorios/Hoodies', modelo: 'STUSSY Custom Streetwear Asset Ref-#7993', batch: 'Subway Hooligan', enlace: 'https://item.taobao.com/item.htm?id=65101993' },
       ];
-
-      // Añadir estos reales
       realProducts.forEach(p => baseProducts.push(p));
 
-      // Ahora generar productos adicionales para cada marca y categoría
-      // Tomamos las marcas y sus vendedores, y para cada combinación generamos varios productos
       const brandCategoryCombos = [
         { marca: 'BALENCIAGA', cat: 'Camisetas', prefix: 'BALENCIAGA Vintage Oversized Summer Cotton Tee Fit-#', idStart: 67100300, idEnd: 67100400 },
         { marca: 'BALENCIAGA', cat: 'Pantalones', prefix: 'BALENCIAGA Streetwear Baggy Cargo Denim Pants Style-#', idStart: 67100500, idEnd: 67100550 },
@@ -529,7 +737,6 @@
         { marca: 'STUSSY', cat: 'Accesorios/Hoodies', prefix: 'STUSSY Heavyweight Fleece Garment Essentials Ref-#', idStart: 65102500, idEnd: 65102550 },
       ];
 
-      // Para cada combo, generar productos
       brandCategoryCombos.forEach(combo => {
         const sellerList = sellers[combo.marca] || ['Top Batch'];
         for (let id = combo.idStart; id <= combo.idEnd; id++) {
@@ -539,14 +746,10 @@
             categoria: combo.cat,
             modelo: `${combo.prefix}${id}`,
             batch: seller,
-            enlace: `https://item.taobao.com/item.htm?id=${id}` // o weidian según marca
+            enlace: `https://item.taobao.com/item.htm?id=${id}`
           });
         }
       });
-
-      // Ajustar algunos enlaces a Weidian para marcas que los usan (Corteiz, Jordan, LV, Nike, Rolex)
-      // Pero lo dejamos genérico, ya tienen enlaces variados
-
       return baseProducts;
     }
 
@@ -563,7 +766,6 @@
     const filterBtns = document.querySelectorAll('.filter-btn');
     const clearBtn = document.getElementById('clearFilters');
 
-    // Iconos de ejemplo para categorías (placeholders)
     const categoryIcon = {
       'Camisetas': '👕',
       'Pantalones': '👖',
@@ -576,12 +778,10 @@
       const query = searchInput.value.toLowerCase().trim();
       let filtered = products;
 
-      // Filtro por marca
       if (currentFilter !== 'all') {
         filtered = filtered.filter(p => p.marca === currentFilter);
       }
 
-      // Búsqueda por texto
       if (query) {
         filtered = filtered.filter(p =>
           p.marca.toLowerCase().includes(query) ||
@@ -606,12 +806,13 @@
       }
 
       let html = '';
-      filteredProducts.forEach(p => {
+      filteredProducts.forEach((p, index) => {
         const icon = categoryIcon[p.categoria] || '📦';
-        // Para la imagen usamos un emoji grande con fondo
+        // Añadimos un retraso en línea para la animación escalonada (solo si no se han renderizado antes)
+        const delay = Math.min(index * 0.04, 1.2);
         html += `
-          <div class="product-card">
-            <div class="product-image" style="background: #1a1a1a;">
+          <div class="product-card" style="animation-delay: ${delay}s;">
+            <div class="product-image">
               <span style="font-size: 3.5rem; opacity: 0.8;">${icon}</span>
               <span class="brand-tag">${p.marca}</span>
             </div>
@@ -631,10 +832,9 @@
       grid.innerHTML = html;
     }
 
-    // Eventos de búsqueda
+    // Eventos
     searchInput.addEventListener('input', render);
 
-    // Filtros de marca
     filterBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         filterBtns.forEach(b => b.classList.remove('active'));
@@ -644,7 +844,6 @@
       });
     });
 
-    // Limpiar filtros
     clearBtn.addEventListener('click', () => {
       filterBtns.forEach(b => b.classList.remove('active'));
       document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
@@ -653,8 +852,18 @@
       render();
     });
 
-    // Render inicial
+    // Render inicial (se ejecuta al terminar el splash)
     render();
+
+    // Pequeño fix para que el header no se superponga al hacer scroll
+    window.addEventListener('scroll', () => {
+      const header = document.querySelector('.header');
+      if (window.scrollY > 60) {
+        header.style.background = 'rgba(13,13,13,0.92)';
+      } else {
+        header.style.background = 'rgba(13,13,13,0.8)';
+      }
+    });
   </script>
 </body>
 </html>
